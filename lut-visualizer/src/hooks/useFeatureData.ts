@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAppStore } from "../store/useAppStore";
 
-const DATA_URL = "/data/features.json";
+const DATA_URL = `${import.meta.env.BASE_URL}data/features.json`;
 
 export function useFeatureData(): { loading: boolean; error: string | null } {
   const setPayload = useAppStore((s) => s.setPayload);
