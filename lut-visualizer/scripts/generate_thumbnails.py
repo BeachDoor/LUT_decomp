@@ -48,12 +48,25 @@ def load_image(path: Path) -> Image.Image:
     if path.suffix.lower() in _RAW_SUFFIXES:
         try:
             import rawpy  # type: ignore[import-untyped]
-        except ImportError as e:
+        except ImportError:
+            import platform
+            system = platform.system()
+            machine = platform.machine()
+            if system == "Darwin" and machine == "x86_64":
+                hint = (
+                    "Intel Mac 向けのホイールは v0.23 以前に存在します:\n"
+                    "  uv add 'rawpy<=0.23'\n"
+                    "または Homebrew で LibRaw をインストール後にソースからビルド:\n"
+                    "  brew install libraw && uv add rawpy --no-binary rawpy"
+                )
+            elif system == "Darwin":
+                hint = "uv add rawpy"
+            else:
+                hint = "uv add rawpy"
             raise RuntimeError(
-                "rawpy is required for RAW files. Run: uv add rawpy"
-            ) from e
+                f"RAW ファイルの読み込みには rawpy が必要です。\n{hint}"
+            )
         with rawpy.imread(str(path)) as raw:
-            # postprocess returns uint8 RGB; use camera white balance
             rgb = raw.postprocess(
                 use_camera_wb=True,
                 output_bps=8,
