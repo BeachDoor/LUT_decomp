@@ -1,6 +1,7 @@
 import { useAppStore } from "../../store/useAppStore";
 import { getLutColor } from "../../lib/colormap";
 import { CATEGORY_COLORS } from "../../lib/colormap";
+import { LutThumbnail } from "../common/LutThumbnail";
 
 export function DetailPanel() {
   const payload = useAppStore((s) => s.payload);
@@ -23,18 +24,22 @@ export function DetailPanel() {
       style={{ maxHeight: 220 }}
     >
       <div className="p-3">
-        <div className="flex gap-4 mb-2">
+        <div className="flex flex-wrap gap-3 mb-2">
           {selectedLuts.map((lut, i) => {
             if (!lut) return null;
             const color = getLutColor(lut.id, selectedIds) ?? "#888";
             return (
-              <span
-                key={lut.id}
-                className="font-bold"
-                style={{ color }}
-              >
-                {i + 1}. {lut.name}
-              </span>
+              <div key={lut.id} className="flex items-center gap-2">
+                <LutThumbnail
+                  thumbnailPath={lut.thumbnail_path}
+                  alt={lut.name}
+                  className="w-20 h-[53px] border"
+                  style={{ borderColor: color }}
+                />
+                <span className="font-bold text-[11px]" style={{ color }}>
+                  {i + 1}. {lut.name}
+                </span>
+              </div>
             );
           })}
         </div>

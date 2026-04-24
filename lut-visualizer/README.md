@@ -94,6 +94,31 @@ uv run python ../lut-visualizer/scripts/export_features.py \
   --out  ../lut-visualizer/public/data/features.json
 ```
 
+### サムネイル画像の生成
+
+各 LUT をリファレンス画像に適用してサムネイル JPEG を生成します。
+
+```bash
+cd ../lut_features
+
+uv run python ../lut-visualizer/scripts/generate_thumbnails.py \
+  --image path/to/reference.jpg \
+  --lut-dir ../lut-visualizer/public/data/sample_luts/ \
+  --out-dir ../lut-visualizer/public/thumbnails/
+```
+
+| オプション | 説明 | デフォルト |
+|-----------|------|-----------|
+| `--image` | リファレンス画像（JPEG / PNG） | 必須 |
+| `--luts` | 個別の `.cube` ファイル | — |
+| `--lut-dir` | `.cube` ファイルのディレクトリ | — |
+| `--out-dir` | サムネイル出力先 | `public/thumbnails/` |
+| `--size` | 長辺のピクセル数 | `320` |
+| `--quality` | JPEG 品質 (1–95) | `85` |
+
+生成されたサムネイルは散布図のホバーツールチップと、選択 LUT の詳細パネルに自動表示されます。  
+画像がない場合は非表示になるため、生成前でもアプリは正常に動作します。
+
 ---
 
 ## プロジェクト構成

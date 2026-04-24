@@ -1,0 +1,28 @@
+import { useState } from "react";
+import type React from "react";
+
+interface LutThumbnailProps {
+  thumbnailPath: string;
+  alt: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export function LutThumbnail({ thumbnailPath, alt, className = "", style }: LutThumbnailProps) {
+  const [failed, setFailed] = useState(false);
+
+  const src = `${import.meta.env.BASE_URL}${thumbnailPath.replace(/^\//, "")}`;
+
+  if (failed) return null;
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className={`object-cover rounded ${className}`}
+      style={style}
+      loading="lazy"
+    />
+  );
+}
