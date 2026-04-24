@@ -21,15 +21,18 @@ export function RadarGrid() {
     .filter((l): l is NonNullable<typeof l> => l !== undefined);
 
   return (
-    <div className="flex flex-col h-full">
+    // Desktop: h-full fills fixed-height pane and scrolls internally
+    // Mobile: natural height, parent scrolls
+    <div className="flex flex-col lg:h-full">
       <LutSelector />
-      <div className="flex-1 overflow-auto">
+      <div className="lg:flex-1 lg:overflow-auto">
         {selectedLuts.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-[var(--color-muted)] text-xs font-mono p-8 text-center">
+          <div className="flex items-center justify-center py-12 text-[var(--color-muted)] text-xs font-mono text-center px-8">
             LUTを選択するとレーダーチャートが表示されます
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-1 p-2">
+          // Mobile: 1 column; tablet+: 2 columns
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 p-2">
             {categories.map((cat) => (
               <div
                 key={cat.id}

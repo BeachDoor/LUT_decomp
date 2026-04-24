@@ -13,7 +13,17 @@ export function LutThumbnail({ thumbnailPath, alt, className = "", style }: LutT
 
   const src = `${import.meta.env.BASE_URL}${thumbnailPath.replace(/^\//, "")}`;
 
-  if (failed) return null;
+  if (failed) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-[var(--color-border)]
+                    text-[var(--color-muted)] text-[10px] font-mono rounded ${className}`}
+        style={style}
+      >
+        No image
+      </div>
+    );
+  }
 
   return (
     <img
