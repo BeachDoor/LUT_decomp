@@ -47,32 +47,45 @@ export function AppShell() {
   }
 
   return (
-    // Desktop: fixed-height column (no scroll)
     // Mobile: natural document flow (vertical scroll)
+    // Desktop (lg): fixed viewport height, internal scroll only
     <div className="flex flex-col lg:h-screen lg:overflow-hidden">
 
-      {/* Header — sticky on mobile so it stays visible while scrolling */}
+      {/* Header — sticky on mobile */}
       <div className="sticky top-0 z-40 lg:static shrink-0">
         <Header exportTargetRef={exportRef} />
       </div>
 
-      {/* Thumbnail strip — desktop only, sits between header and main panes */}
+      {/* Thumbnail strip — desktop only, top position */}
       <div className="hidden lg:block shrink-0">
         <ThumbnailStrip />
       </div>
 
-      {/* Main content area */}
-      <div ref={exportRef} className="flex flex-col lg:flex-row lg:flex-1 lg:overflow-hidden">
+      {/* ControlBar */}
+      <div className="shrink-0">
+        <ControlBar />
+      </div>
 
+      {/* Main area: flex-1 fills remaining viewport height on desktop */}
+      <div
+        ref={exportRef}
+        // Desktop: horizontal 2-pane, fixed height (min-h-0 is critical for nested flex)
+        // Mobile: vertical stack, natural height
+        className="flex flex-col lg:flex-row lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+      >
         {/* Scatter pane */}
-        <div className="flex flex-col lg:flex-1 lg:min-w-0 lg:border-r border-[var(--color-border)]">
-          <ControlBar />
-          {/* Mobile: 50vh fixed; Desktop: flex-1 fills remaining space */}
+        <div
+          // Desktop: fill width minus radar; min-h-0 allows the flex-col children to shrink
+          // Mobile: natural width, natural height
+          className="flex flex-col lg:flex-1 lg:min-w-0 lg:min-h-0 lg:border-r border-[var(--color-border)]"
+        >
           <div
             ref={scatterContainerRef}
-            className="h-[50vh] lg:h-auto lg:flex-1 bg-[var(--color-bg)] overflow-hidden"
+            // Mobile: 50vh fixed height
+            // Desktop: flex-1 fills remaining; min-h-0 prevents overflow
+            className="h-[50vh] lg:flex-1 lg:min-h-0 bg-[var(--color-bg)] overflow-hidden"
           >
-            {dims.scatterW > 0 && (
+            {dims.scatterW > 0 && dims.scatterH > 0 && (
               <ScatterPlot width={dims.scatterW} height={dims.scatterH} />
             )}
           </div>
@@ -84,7 +97,7 @@ export function AppShell() {
         </div>
 
         {/* Radar pane */}
-        <div className="lg:w-[480px] lg:shrink-0 lg:overflow-hidden bg-[var(--color-bg)]">
+        <div className="lg:w-[480px] lg:shrink-0 lg:min-h-0 lg:overflow-hidden bg-[var(--color-bg)]">
           <RadarGrid />
         </div>
       </div>
