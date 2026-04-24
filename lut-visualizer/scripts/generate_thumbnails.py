@@ -1,6 +1,11 @@
 """
 Apply each LUT to a reference image and save thumbnail JPEGs.
 
+Supported input formats:
+  - JPEG, PNG, TIFF, WebP … (Pillow)
+  - RAW camera files: CR2, CR3, NEF, NRW, ARW, RAF, ORF, RW2, PEF, DNG,
+    3FR, ERF, KDC, MEF, MOS, MRW, RWL, SRF, SR2, X3F … (rawpy / LibRaw)
+
 Usage (from lut_features/ directory):
     uv run python ../lut-visualizer/scripts/generate_thumbnails.py \\
         --image path/to/reference.jpg \\
@@ -8,7 +13,7 @@ Usage (from lut_features/ directory):
         --out-dir ../lut-visualizer/public/thumbnails/
 
 Options:
-    --image       Reference image file (JPEG / PNG)
+    --image       Reference image file (JPEG / PNG / RAW …)
     --luts        Individual .cube files (alternative to --lut-dir)
     --lut-dir     Directory of .cube files
     --out-dir     Output directory for thumbnail JPEGs (default: public/thumbnails/)
@@ -30,12 +35,38 @@ from scipy.interpolate import RegularGridInterpolator
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "lut_features" / "src"))
 from lut_features.parser import parse_cube
 
+# RAW file extensions handled by rawpy/LibRaw
+_RAW_SUFFIXES = {
+    ".3fr", ".arw", ".cr2", ".cr3", ".crw", ".dcr", ".dng", ".erf",
+    ".kdc", ".mef", ".mос", ".mrw", ".mos", ".nef", ".nrw", ".orf",
+    ".pef", ".raf", ".raw", ".rwl", ".rw2", ".srf", ".sr2", ".x3f",
+}
+
+
+def load_image(path: Path) -> Image.Image:
+    """Load any supported image (JPEG/PNG/TIFF/RAW …) and return an RGB PIL Image."""
+    if path.suffix.lower() in _RAW_SUFFIXES:
+        try:
+            import rawpy  # type: ignore[import-untyped]
+        except ImportError as e:
+            raise RuntimeError(
+                "rawpy is required for RAW files. Run: uv add rawpy"
+            ) from e
+        with rawpy.imread(str(path)) as raw:
+            # postprocess returns uint8 RGB; use camera white balance
+            rgb = raw.postprocess(
+                use_camera_wb=True,
+                output_bps=8,
+                no_auto_bright=False,
+            )
+        return Image.fromarray(rgb)
+    return Image.open(path).convert("RGB")
+
 
 def apply_lut(img_array: np.ndarray, cube_path: Path) -> np.ndarray:
     """Apply a 3D LUT to an HxWx3 uint8 image array. Returns uint8 array."""
     cube = parse_cube(cube_path)
     n = cube.size
-    # cube.data is shape (n, n, n, 3) indexed [r, g, b]
     vals = np.linspace(0.0, 1.0, n)
     rgi = RegularGridInterpolator(
         (vals, vals, vals),
@@ -75,13 +106,12 @@ def generate(
 ) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    ref = Image.open(image_path).convert("RGB")
+    print(f"Loading: {image_path.name} … ", end="", flush=True)
+    ref = load_image(image_path)
     ref_thumb = fit_thumbnail(ref, long_edge)
     ref_array = np.array(ref_thumb)
-
-    print(f"Reference: {image_path.name}  {ref.size[0]}×{ref.size[1]} → {ref_thumb.size[0]}×{ref_thumb.size[1]}")
-    print(f"Output dir: {out_dir}")
-    print()
+    print(f"{ref.size[0]}×{ref.size[1]} → {ref_thumb.size[0]}×{ref_thumb.size[1]}")
+    print(f"Output dir: {out_dir}\n")
 
     for cube_path in cube_paths:
         name = slug(cube_path)
@@ -100,7 +130,7 @@ def generate(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate LUT preview thumbnails")
     parser.add_argument("--image", required=True, metavar="FILE",
-                        help="Reference image (JPEG/PNG)")
+                        help="Reference image (JPEG/PNG/RAW …)")
     parser.add_argument("--luts", nargs="*", default=[], metavar="FILE",
                         help="Individual .cube files")
     parser.add_argument("--lut-dir", metavar="DIR",
