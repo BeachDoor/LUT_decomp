@@ -8,6 +8,7 @@ dependencies = [
     "scipy>=1.10",
     "colour-science>=0.4.3",
     "pillow>=12.2.0",
+    "rawpy<=0.23",
 ]
 
 [project.optional-dependencies]
