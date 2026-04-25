@@ -83,7 +83,7 @@ export function AppShell() {
             ref={scatterContainerRef}
             // Mobile: 50vh fixed height
             // Desktop: flex-1 fills remaining; min-h-0 prevents overflow
-            className="h-[50vh] lg:flex-1 lg:min-h-0 bg-[var(--color-bg)] overflow-hidden"
+            className="max-lg:h-[50vh] lg:flex-1 lg:min-h-0 bg-[var(--color-bg)] overflow-hidden"
           >
             {dims.scatterW > 0 && dims.scatterH > 0 && (
               <ScatterPlot width={dims.scatterW} height={dims.scatterH} />
