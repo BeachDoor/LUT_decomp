@@ -1,0 +1,42 @@
+name: Visualizer CI
+
+on:
+  push:
+    branches:
+      - "claude/**"
+      - develop
+      - main
+    paths:
+      - "lut-visualizer/**"
+  pull_request:
+    paths:
+      - "lut-visualizer/**"
+
+defaults:
+  run:
+    working-directory: lut-visualizer
+
+jobs:
+  test-and-build:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: lut-visualizer/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
