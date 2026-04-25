@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFeatureData } from "../hooks/useFeatureData";
 import { useProjection } from "../hooks/useProjection";
 import { useUrlState } from "../hooks/useUrlState";
@@ -17,14 +17,14 @@ export function AppShell() {
   const theme = useAppStore((s) => s.theme);
   const exportRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ scatterW: 0, scatterH: 0 });
-  const scatterContainerRef = useRef<HTMLDivElement>(null);
+  const [scatterEl, setScatterEl] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
   useEffect(() => {
-    if (!scatterContainerRef.current) return;
+    if (!scatterEl) return;
     const ro = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
@@ -34,9 +34,9 @@ export function AppShell() {
         });
       }
     });
-    ro.observe(scatterContainerRef.current);
+    ro.observe(scatterEl);
     return () => ro.disconnect();
-  }, []);
+  }, [scatterEl]);
 
   if (loading) {
     return (
@@ -80,7 +80,7 @@ export function AppShell() {
           className="flex flex-col lg:flex-1 lg:min-w-0 lg:min-h-0 lg:border-r border-[var(--color-border)]"
         >
           <div
-            ref={scatterContainerRef}
+            ref={setScatterEl}
             // Mobile: 50vh fixed height
             // Desktop: flex-1 fills remaining; min-h-0 prevents overflow
             className="max-lg:h-[50vh] lg:flex-1 lg:min-h-0 bg-[var(--color-bg)] overflow-hidden"
